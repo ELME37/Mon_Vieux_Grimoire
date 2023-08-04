@@ -1,7 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
-const Book = require('./models/Book');
+const bookRoutes = require('./routes/book')
+const userRoutes = require('./routes/user')
+const path = require('path');
 
 mongoose.connect('mongodb+srv://MickaelOCR:Azerty123456789@cluster0.t1fbysk.mongodb.net/?retryWrites=true&w=majority',
   { useNewUrlParser: true,
@@ -20,38 +22,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post('/api/books', (req, res, next) => {
-  delete req.body.userId;
-  const book = new Book({
-    ...req.body
-  });
-  book.save()
-    .then(() => res.status(201).json({ mesage: 'Livre enregistré'}))
-    .catch(error => res.status(400).json({ error }));
-});
-
-app.put('/api/books/:id', (req, res, next) => {
-  Book.updateOne({ userId: req.params.id }, { ...req.body, userId: req.params.id })
-    .then(() => res.status(200).json({ message: 'Livre modifié !'}))
-    .catch(error => res.status(400).json({ error }));
-});
-
-app.delete('/api/books/:id', (req, res, next) => {
-  Book.deleteOne({ userId: req.params.id })
-    .then(() => res.status(200).json({ message: 'Livre supprimé !'}))
-    .catch(error => res.status(400).json({ error }));
-});
-
-app.get('/api/books/:id', (req, res, next) => {
-  Book.findOne({ userId: req.params.id })
-    .then(thing => res.status(200).json(thing))
-    .catch(error => res.status(404).json({ error }));
-});
-
-app.get('/api/books', (req, res, next) => {
-  Book.find()
-    .then(books => res.status(200).json(books))
-    .catch(error => res.status(400).json ({ error }));
-});
+app.use('/api/books', bookRoutes);
+app.use('/api/auth', userRoutes);
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 module.exports = app;
